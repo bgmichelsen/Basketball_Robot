@@ -7,7 +7,11 @@ const BALL_SIZE = 24;      // Size of the basketball sphere
 const BASKET_HEIGHT = 305; // Height of the basket
 
 let scale;             // Scaling factor for the calculations
-let scaleSlider;       // Scale slider object
+let scale_slider;       // Scale slider object
+
+let angle_rate;        // Rate of change of angle
+let angle_rate_slider; // Slider for changing rate of change of angle
+
 let hoop_x, hoop_y;    // x and y coords of the hoop center
 
 
@@ -16,10 +20,11 @@ let hoop_x, hoop_y;    // x and y coords of the hoop center
   
   *  start_x = x coord of robot
   *  end_x = x coord of hoop
+  *  rate = rate of change of angle
 */
-function calc_theta(start_x, end_x) {
+function calc_theta(start_x, end_x, rate) {
   let dist = (end_x - start_x)/10;  // Calculate the distance between the robot and the hoop
-  return (-0.5*dist + 90);          // Linear mapping of distance to the angle
+  return (-rate*dist + 90);          // Linear mapping of distance to the angle
 }
 
 
@@ -132,9 +137,14 @@ function setup() {
   textSize(FONT_SIZE);                 // Set the size of the fonts
   
   /* Setup slider for adjusting the scale factor */
-  scaleSlider = createSlider(10, 1000, 100, 10);
-  scaleSlider.size(100);
-  scaleSlider.position((width - 150), FONT_SIZE*2);
+  scale_slider = createSlider(10, 1000, 100, 10);
+  scale_slider.size(100);
+  scale_slider.position((width - 200), FONT_SIZE*2);
+  
+  /* Setup for adjusting the angle rate of change */
+  angle_rate_slider = createSlider(0.25, 1.5, 0.5, 0.01);
+  angle_rate_slider.size(100);
+  angle_rate_slider.position((width - 200), FONT_SIZE*5);
 }
 
 
@@ -147,7 +157,8 @@ function draw() {
    clear();
    noStroke();
    
-   scale = scaleSlider.value();
+   scale = scale_slider.value();
+   angle_rate = angle_rate_slider.value();
    
    draw_hoop(hoop_x, hoop_y);
    
@@ -164,7 +175,7 @@ function draw() {
      x = hoop_x - MAX_DIST;
    }
    
-   let theta = calc_theta(x, hoop_x);
+   let theta = calc_theta(x, hoop_x, angle_rate);
    let velocity = calc_velocity(theta, x, (height - ROBOT_SIZE/2), hoop_x, hoop_y);
    let velocity_scaled = calc_velocity(theta, x/scale, (height - ROBOT_SIZE/2)/scale, hoop_x/scale, hoop_y/scale);
    
@@ -173,7 +184,9 @@ function draw() {
    text("Launch Velocity = " + nfc(velocity_scaled, 2) + " m/s", 10, FONT_SIZE*2);
    text("Distance to Hoop = " + nfc((hoop_x - x)/scale, 2) + " m", 10, FONT_SIZE*3);
    text("Height of the Hoop = " + nfc((height - hoop_y)/scale, 2) + " m", 10, FONT_SIZE*4);
-   text("SCALE: " + scale, width - 150, FONT_SIZE);
+   text("SCALE: " + scale, width - 200, FONT_SIZE);
+   text("ANGLE RATE: " + nfc(angle_rate, 2), width - 200, FONT_SIZE*4);
+   console.log(angle_rate);
    
    draw_trajectory(theta, velocity, x, (height - ROBOT_SIZE/2), hoop_x, hoop_y);
 }
